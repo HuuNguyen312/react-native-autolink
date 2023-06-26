@@ -183,7 +183,7 @@ export const Autolink = React.memo(
           ? truncate(linkText, truncateProp, truncateChars, truncateLocation)
           : linkText;
 
-        if (math.disableClick) {
+        if (match instanceof CustomMatch && match?.getMatcher()?.disableClick) {
           return (
             <Text
               style={
