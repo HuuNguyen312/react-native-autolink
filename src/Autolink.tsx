@@ -6,7 +6,7 @@
  * https://github.com/joshswan/react-native-autolink/blob/master/LICENSE
  */
 
-import React, { createElement, useCallback, useRef } from 'react';
+import React, { createElement, useCallback, useRef } from "react";
 import {
   Autolinker,
   AnchorTagBuilder,
@@ -15,25 +15,33 @@ import {
   HashtagMatch,
   MentionMatch,
   PhoneMatch,
-} from 'autolinker/dist/es2015';
-import { Alert, Linking, StyleSheet, StyleProp, Text, TextStyle, TextProps } from 'react-native';
-import { truncate } from './truncate';
-import { CustomMatch, CustomMatcher } from './CustomMatch';
-import { PolymorphicComponentProps } from './types';
-import * as urls from './urls';
+} from "autolinker/dist/es2015";
+import {
+  Alert,
+  Linking,
+  StyleSheet,
+  StyleProp,
+  Text,
+  TextStyle,
+  TextProps,
+} from "react-native";
+import { truncate } from "./truncate";
+import { CustomMatch, CustomMatcher } from "./CustomMatch";
+import { PolymorphicComponentProps } from "./types";
+import * as urls from "./urls";
 
 const makeTokenGenerator = (uid: string): [() => string, RegExp] => {
   let counter = 0;
   return [
     // eslint-disable-next-line no-plusplus
     () => `@__ELEMENT-${uid}-${counter++}__@`,
-    new RegExp(`(@__ELEMENT-${uid}-\\d+__@)`, 'g'),
+    new RegExp(`(@__ELEMENT-${uid}-\\d+__@)`, "g"),
   ];
 };
 
 const styles = StyleSheet.create({
   link: {
-    color: '#0E7AFE',
+    color: "#0E7AFE",
   },
 });
 
@@ -41,14 +49,14 @@ const tagBuilder = new AnchorTagBuilder();
 
 export interface AutolinkProps {
   email?: boolean;
-  hashtag?: false | 'facebook' | 'instagram' | 'twitter';
+  hashtag?: false | "facebook" | "instagram" | "twitter";
   linkProps?: TextProps;
   linkStyle?: StyleProp<TextStyle>;
   matchers?: CustomMatcher[];
-  mention?: false | 'instagram' | 'soundcloud' | 'twitter';
+  mention?: false | "instagram" | "soundcloud" | "twitter";
   onPress?: (url: string, match: Match) => void;
   onLongPress?: (url: string, match: Match) => void;
-  phone?: boolean | 'text' | 'sms';
+  phone?: boolean | "text" | "sms";
   renderLink?: (text: string, match: Match, index: number) => React.ReactNode;
   renderText?: (text: string, index: number) => React.ReactNode;
   showAlert?: boolean;
@@ -58,7 +66,7 @@ export interface AutolinkProps {
   textProps?: TextProps;
   truncate?: number;
   truncateChars?: string;
-  truncateLocation?: 'end' | 'middle' | 'smart';
+  truncateLocation?: "end" | "middle" | "smart";
   url?:
     | boolean
     | {
@@ -93,8 +101,8 @@ export const Autolink = React.memo(
     text,
     textProps = {},
     truncate: truncateProp = 0,
-    truncateChars = '..',
-    truncateLocation = 'smart',
+    truncateChars = "..",
+    truncateLocation = "smart",
     url = true,
     useNativeSchemes = false,
     ...props
@@ -102,19 +110,27 @@ export const Autolink = React.memo(
     const getUrl = useCallback(
       (match: Match): string => {
         switch (match.getType()) {
-          case 'email':
+          case "email":
             return urls.getEmailUrl(match as EmailMatch);
-          case 'hashtag':
-            return urls.getHashtagUrl(match as HashtagMatch, hashtag, useNativeSchemes);
-          case 'mention':
-            return urls.getMentionUrl(match as MentionMatch, mention, useNativeSchemes);
-          case 'phone':
+          case "hashtag":
+            return urls.getHashtagUrl(
+              match as HashtagMatch,
+              hashtag,
+              useNativeSchemes
+            );
+          case "mention":
+            return urls.getMentionUrl(
+              match as MentionMatch,
+              mention,
+              useNativeSchemes
+            );
+          case "phone":
             return urls.getPhoneUrl(match as PhoneMatch, phone);
           default:
             return match.getAnchorHref();
         }
       },
-      [hashtag, mention, phone, useNativeSchemes],
+      [hashtag, mention, phone, useNativeSchemes]
     );
 
     const onPress = useCallback(
@@ -127,9 +143,9 @@ export const Autolink = React.memo(
 
         // Check if alert needs to be shown
         if (showAlert && !alertShown) {
-          Alert.alert('Leaving App', 'Do you want to continue?', [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'OK', onPress: () => onPress(match, true) },
+          Alert.alert("Leaving App", "Do you want to continue?", [
+            { text: "Cancel", style: "cancel" },
+            { text: "OK", onPress: () => onPress(match, true) },
           ]);
           return;
         }
@@ -142,7 +158,7 @@ export const Autolink = React.memo(
           Linking.openURL(linkUrl);
         }
       },
-      [getUrl, onPressProp, showAlert],
+      [getUrl, onPressProp, showAlert]
     );
 
     const onLongPress = useCallback(
@@ -158,7 +174,7 @@ export const Autolink = React.memo(
           onLongPressProp(linkUrl, match);
         }
       },
-      [getUrl, onLongPressProp],
+      [getUrl, onLongPressProp]
     );
 
     const renderLink = useCallback(
@@ -167,10 +183,28 @@ export const Autolink = React.memo(
           ? truncate(linkText, truncateProp, truncateChars, truncateLocation)
           : linkText;
 
+        if (math.disableClick) {
+          return (
+            <Text
+              style={
+                (match instanceof CustomMatch && match.getMatcher().style) ||
+                linkStyle ||
+                styles.link
+              }
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...linkProps}
+              key={index}
+            >
+              {truncated}
+            </Text>
+          );
+        }
         return (
           <Text
             style={
-              (match instanceof CustomMatch && match.getMatcher().style) || linkStyle || styles.link
+              (match instanceof CustomMatch && match.getMatcher().style) ||
+              linkStyle ||
+              styles.link
             }
             onPress={() => onPress(match)}
             onLongPress={() => onLongPress(match)}
@@ -182,7 +216,15 @@ export const Autolink = React.memo(
           </Text>
         );
       },
-      [linkProps, linkStyle, truncateProp, truncateChars, truncateLocation, onPress, onLongPress],
+      [
+        linkProps,
+        linkStyle,
+        truncateProp,
+        truncateChars,
+        truncateLocation,
+        onPress,
+        onLongPress,
+      ]
     );
 
     // Creates a token with a random UID that should not be guessable or
@@ -194,7 +236,7 @@ export const Autolink = React.memo(
     let linkedText: string;
 
     try {
-      linkedText = Autolinker.link(text || '', {
+      linkedText = Autolinker.link(text || "", {
         email,
         hashtag,
         mention,
@@ -230,7 +272,7 @@ export const Autolink = React.memo(
       });
     } catch (e) {
       // eslint-disable-next-line no-console
-      console.warn('RN Autolink error:', e);
+      console.warn("RN Autolink error:", e);
       return null;
     }
 
@@ -242,7 +284,11 @@ export const Autolink = React.memo(
 
         // Check if rendering link or text node
         if (match?.getType()) {
-          return (renderLinkProp || renderLink)(match.getAnchorText(), match, index);
+          return (renderLinkProp || renderLink)(
+            match.getAnchorText(),
+            match,
+            index
+          );
         }
 
         return renderText ? (
@@ -256,5 +302,5 @@ export const Autolink = React.memo(
       });
 
     return createElement(as || component || Text, props, ...nodes);
-  },
+  }
 );

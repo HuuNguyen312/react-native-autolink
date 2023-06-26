@@ -20,6 +20,7 @@ export interface CustomMatcher {
   getLinkText?: (replacerArgs: ReplacerArgs) => string;
   /* Custom function for extracting link URL using regex replacer args */
   getLinkUrl?: (replacerArgs: ReplacerArgs) => string;
+  disableClick?: boolean
 }
 
 export interface CustomMatchConfig extends MatchConfig {
